@@ -1,0 +1,791 @@
+
+/* ── Tokens: identidade Churrascaria Querência ──────────────────────────── */
+:root {
+  --fundo: #292B29;          /* grafite */
+  --texto: #F3E7D9;          /* creme */
+  --texto-suave: #D3C5B4;
+  --acento: #E66A19;         /* laranja fogo */
+  --acento-texto: #1B1C1B;   /* texto sobre laranja (contraste AA) */
+  --rotulo: #E66A19;
+  --botao-bg: #E66A19;
+  --botao-txt: #1B1C1B;
+  --linha: rgb(243 231 217 / 0.16);
+  --painel: rgb(41 43 41 / 0.7);
+  --marrom: #8D2D13;
+  --bege: #F9DCC7;
+  --creme: #F3E7D9;
+
+  --fonte-titulo: "Playfair Display", Georgia, serif;
+  --fonte-texto: "Figtree", system-ui, sans-serif;
+
+  --raio: 18px;
+  --gutter: clamp(16px, 4vw, 56px);
+  --largura: 1240px;
+  --ease: cubic-bezier(.2, .7, .1, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; overflow-x: clip; scroll-padding-top: 72px; }
+body {
+  margin: 0;
+  background: var(--fundo);
+  color: var(--texto);
+  font: 400 clamp(16px, 1.05vw, 18px)/1.65 var(--fonte-texto);
+  overflow-x: clip;
+  -webkit-font-smoothing: antialiased;
+}
+/* Grão de filme: tira o aspecto "liso de IA" */
+body::after {
+  content: ""; position: fixed; inset: -50%; z-index: 90; pointer-events: none; opacity: .06;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grao 1s steps(4) infinite;
+}
+@keyframes grao { 25% { transform: translate(-3%, 2%); } 50% { transform: translate(2%, -3%); } 75% { transform: translate(-2%, -1%); } }
+
+img { max-width: 100%; display: block; }
+a { color: inherit; }
+h1, h2, h3 { font-family: var(--fonte-titulo); font-weight: 800; line-height: 1.08; margin: 0 0 .5em; letter-spacing: -.005em; text-wrap: balance; }
+h1 { font-size: clamp(34px, 5.4vw, 84px); text-transform: uppercase; line-height: 1.04; }
+h2 { font-size: clamp(30px, 3.8vw, 56px); }
+h3 { font-size: clamp(21px, 1.8vw, 27px); font-weight: 600; }
+.h-grande { font-size: clamp(26px, 2.8vw, 40px); font-weight: 800; }
+p { margin: 0 0 1em; color: var(--texto-suave); text-wrap: pretty; }
+:focus-visible { outline: 3px solid var(--acento); outline-offset: 3px; }
+
+/* ── Tema claro e marrom por seção ──────────────────────────────────────── */
+.secao--clara, .rodape {
+  --fundo: #F3E7D9; --texto: #292B29; --texto-suave: #5B4D43; --acento: #8D2D13; --rotulo: #8D2D13;
+  --botao-bg: #8D2D13; --botao-txt: #F9DCC7;
+  --linha: rgb(41 43 41 / 0.16); --painel: rgb(255 255 255 / 0.58);
+}
+.secao--marrom {
+  --fundo: #8D2D13; --texto: #F9DCC7; --texto-suave: #F3E7D9; --acento: #F9DCC7; --rotulo: #F9DCC7;
+  --linha: rgb(249 220 199 / 0.3); --painel: rgb(41 43 41 / 0.28);
+}
+
+/* ── Topo ──────────────────────────────────────────────────────────────── */
+.topo {
+  position: fixed; inset: 0 0 auto; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 12px var(--gutter);
+  transition: background .4s var(--ease), backdrop-filter .4s;
+}
+.topo.rolou { background: rgb(41 43 41 / .78); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+.marca { text-decoration: none; display: flex; align-items: center; }
+/* A logo oficial tem fundo bege próprio: fica num selo, sem alterar a arte */
+.marca-logo { height: 76px; width: auto; border-radius: 12px; border: 1px solid rgb(249 220 199 / .5); }
+.menu { display: flex; gap: clamp(14px, 2vw, 28px); align-items: center; font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+.menu a { text-decoration: none; opacity: .85; transition: opacity .3s; text-shadow: 0 1px 12px rgb(0 0 0 / .5); }
+.menu a:hover { opacity: 1; }
+.menu-cta { background: var(--acento); color: var(--acento-texto); padding: 11px 18px; border-radius: 999px; opacity: 1 !important; text-shadow: none !important; }
+@media (max-width: 1100px) { .menu a:not(.menu-cta) { display: none; } }
+
+/* ── Abertura cinematográfica ──────────────────────────────────────────── */
+.cine { position: relative; height: var(--altura, 400vh); }
+.cine-palco {
+  position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background: #1B1C1B url("assets/poster.webp") center / cover no-repeat;
+}
+.cine-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.cine-vinheta {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(120% 90% at 50% 45%, transparent 55%, rgb(0 0 0 / .5) 100%),
+    linear-gradient(to bottom, transparent 70%, #292B29 100%);
+}
+.momento {
+  position: absolute; inset: auto var(--gutter) 10vh; max-width: 540px;
+  opacity: 0; transform: translateY(24px); filter: blur(6px);
+  transition: opacity .7s var(--ease), transform .9s var(--ease), filter .7s var(--ease);
+  pointer-events: none;
+}
+.momento.ativo { opacity: 1; transform: none; filter: none; pointer-events: auto; }
+.momento--direita { left: auto; right: var(--gutter); }
+.momento--centro { left: 50%; right: auto; bottom: 6vh; max-width: none; transform: translate(-50%, 24px); text-align: center; width: min(700px, calc(100% - 2 * var(--gutter))); }
+.momento--centro .botoes { justify-content: center; margin-top: .6em; flex-wrap: nowrap; }
+.momento--centro .destaque { font-size: clamp(22px, 2.3vw, 34px); }
+.momento--centro.ativo { transform: translate(-50%, 0); }
+.titulo-abertura { margin-bottom: .3em; font-size: clamp(30px, 3.9vw, 60px); }
+.apoio { font-size: clamp(16px, 1.3vw, 20px); margin: 0; color: var(--texto); }
+.destaque { font-family: var(--fonte-titulo); font-weight: 600; font-size: clamp(24px, 2.8vw, 40px); line-height: 1.2; color: var(--texto); margin: 0 0 .6em; }
+.destaque:last-child { margin: 0; }
+.cine-dica {
+  position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
+  display: grid; justify-items: center; gap: 8px; font-size: 11px; letter-spacing: .3em; text-transform: uppercase; opacity: .7;
+  transition: opacity .5s;
+}
+.cine-dica span { width: 1px; height: 38px; background: linear-gradient(var(--texto), transparent); animation: dica 2s var(--ease) infinite; }
+@keyframes dica { 0% { transform: scaleY(0); transform-origin: top; } 50% { transform: scaleY(1); transform-origin: top; } 51% { transform-origin: bottom; } 100% { transform: scaleY(0); transform-origin: bottom; } }
+.cine.andou .cine-dica { opacity: 0; }
+
+/* ── Painéis (todo texto mora num painel) ──────────────────────────────── */
+.painel {
+  position: relative;
+  background: var(--painel);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio);
+  padding: clamp(24px, 3.2vw, 48px);
+  backdrop-filter: blur(14px) saturate(1.1);
+  -webkit-backdrop-filter: blur(14px) saturate(1.1);
+}
+.painel--vidro { background: rgb(27 28 27 / .42); border-color: rgb(243 231 217 / .2); padding: clamp(20px, 2.4vw, 34px); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.painel > :last-child { margin-bottom: 0; }
+.rotulo { display: block; font-size: 12px; font-weight: 700; letter-spacing: .26em; text-transform: uppercase; color: var(--rotulo); margin-bottom: 18px; }
+
+/* ── Seções ────────────────────────────────────────────────────────────── */
+/* O fundo da seção vai num ::before (z -2) para a camada de brasas (z -1) aparecer por cima dele
+   e por baixo do conteúdo. Por isso as seções NÃO podem criar contexto de empilhamento. */
+.secao, .rodape { position: relative; }
+.secao::before, .rodape::before { content: ""; position: absolute; inset: 0; z-index: -2; background: var(--fundo); }
+.brasas { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1; }
+.brasas--hero { position: absolute; z-index: 0; }
+.secao {
+  overflow: clip;
+  color: var(--texto);
+  min-height: 100vh; padding: 14vh var(--gutter);
+  display: grid; align-content: center; gap: clamp(24px, 3vw, 44px); justify-items: center;
+}
+.secao--curta { min-height: 70vh; }
+.secao-topo { width: 100%; max-width: var(--largura); }
+.duo {
+  width: 100%; max-width: var(--largura); display: grid; gap: clamp(24px, 4vw, 64px);
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); align-items: center;
+}
+.duo--inverso { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); }
+.duo--inverso > .foto { order: 2; }
+.duo > .foto { max-width: 520px; width: 100%; justify-self: center; }
+
+/* Fotos reais: moldura em arco, sem sombra de cartão */
+.foto { position: relative; margin: 0; overflow: hidden; border-radius: var(--raio); background: #1B1C1B; }
+/* scale e translate são propriedades separadas: o JS move a foto (paralaxe) sem brigar com o zoom do hover */
+.foto img { width: 100%; height: 100%; object-fit: cover; aspect-ratio: 4 / 5; scale: 1.14; transition: scale 1.2s var(--ease); will-change: translate; }
+.foto--arco { border-radius: 999px 999px var(--raio) var(--raio); border: 1px solid var(--linha); }
+.foto:hover img { scale: 1.2; }
+.foto figcaption {
+  position: absolute; inset: auto 0 0; padding: 40px 20px 18px; text-align: center; font-size: 12px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase;
+  color: #F3E7D9; background: linear-gradient(transparent, rgb(27 28 27 / .8));
+}
+
+.selo { display: flex; align-items: baseline; gap: 14px; margin-top: 1.4em; padding-top: 1.2em; border-top: 1px solid var(--linha); }
+.selo strong { font-family: var(--fonte-titulo); font-size: clamp(40px, 4vw, 64px); color: var(--acento); line-height: 1; }
+.selo span { font-size: 13px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--texto); }
+
+.lista-cardapio { list-style: none; margin: 1.4em 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 0 28px; }
+.lista-cardapio a {
+  display: flex; align-items: baseline; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--linha);
+  text-decoration: none; font-weight: 600; color: var(--texto); transition: color .3s, padding-left .4s var(--ease);
+}
+.lista-cardapio a:hover { color: var(--acento); padding-left: 8px; }
+.lista-cardapio span { font-family: var(--fonte-titulo); color: var(--acento); font-size: 15px; }
+
+.semana { list-style: none; margin: 1.2em 0 0; padding: 0; }
+.semana li { display: grid; grid-template-columns: 150px 1fr; gap: 14px; padding: 15px 14px; border-bottom: 1px solid var(--linha); border-radius: 10px; transition: background .4s; }
+.semana strong { font-family: var(--fonte-titulo); font-size: 18px; color: var(--acento); }
+.semana span { color: var(--texto); font-weight: 500; }
+.semana .fechado span { color: var(--texto-suave); font-style: italic; }
+.semana li.hoje { background: rgb(141 45 19 / .12); border-bottom-color: var(--acento); }
+.semana strong { white-space: nowrap; }
+.semana li.hoje strong::after { content: " · hoje"; font-family: var(--fonte-texto); font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
+
+.etiquetas { list-style: none; margin: 1.2em 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px; }
+.etiquetas li { padding: 9px 16px; border: 1px solid var(--linha); border-radius: 999px; font-size: 14px; font-weight: 600; letter-spacing: .04em; color: var(--texto); }
+.faixa { width: 100%; max-width: var(--largura); display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.faixa .foto:nth-child(2) { margin-top: 48px; }
+.destaque-casa { width: 100%; max-width: var(--largura); display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: clamp(24px, 4vw, 56px); align-items: center; }
+
+.galeria { width: 100%; max-width: var(--largura); display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.galeria-item { padding: 0; border: 0; background: #1B1C1B; cursor: zoom-in; overflow: hidden; border-radius: 12px; }
+.galeria-item img { width: 100%; height: 100%; aspect-ratio: 4 / 5; object-fit: cover; scale: 1.14; transition: scale 1s var(--ease), filter .5s; will-change: translate; }
+.galeria-item:hover img { scale: 1.2; filter: brightness(1.08) saturate(1.1); }
+.galeria-item:nth-child(4n + 2) { margin-top: 36px; }
+.galeria-item:nth-child(4n + 4) { margin-top: 18px; }
+.lightbox { border: 0; padding: 0; background: transparent; max-width: min(92vw, 760px); max-height: 92vh; overflow: visible; }
+.lightbox::backdrop { background: rgb(20 20 19 / .88); backdrop-filter: blur(6px); }
+.lightbox img { max-height: 88vh; width: auto; border-radius: 12px; }
+.lightbox-fechar { position: absolute; top: -14px; right: -14px; width: 40px; height: 40px; border-radius: 50%; border: 0; background: var(--bege); color: #292B29; font-size: 26px; line-height: 1; cursor: pointer; }
+
+.painel--nota { max-width: 760px; width: 100%; text-align: center; }
+.painel--nota .botoes { justify-content: center; }
+.nota { display: flex; justify-content: center; align-items: baseline; gap: 18px; margin: 0 0 .2em; }
+.nota strong { font-family: var(--fonte-titulo); font-size: clamp(72px, 9vw, 128px); line-height: 1; color: var(--acento); }
+.estrelas { font-size: clamp(26px, 3vw, 40px); letter-spacing: .1em; color: var(--acento); }
+
+.contato-grade { width: 100%; max-width: var(--largura); display: grid; grid-template-columns: 1fr 1fr; gap: clamp(16px, 2vw, 28px); align-items: start; }
+.dados { margin: 0 0 24px; display: grid; gap: 16px; }
+.dados div { display: grid; grid-template-columns: 110px 1fr; gap: 12px; padding-bottom: 16px; border-bottom: 1px solid var(--linha); }
+.dados dt { font-size: 12px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--rotulo); padding-top: 4px; }
+.dados dd { margin: 0; color: var(--texto); }
+.dados a { text-decoration-color: var(--acento); text-underline-offset: 4px; }
+.mapa { border-radius: 14px; overflow: hidden; border: 1px solid var(--linha); }
+.mapa iframe { display: block; width: 100%; height: 280px; border: 0; }
+
+.pedido { max-width: 760px; text-align: center; }
+.pedido h2 { font-size: clamp(34px, 4.6vw, 68px); }
+.pedido p { font-size: clamp(17px, 1.4vw, 21px); }
+
+/* ── Formulário ────────────────────────────────────────────────────────── */
+.form { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; }
+.campo { display: grid; gap: 6px; }
+.campo--inteiro { grid-column: 1 / -1; }
+.campo label { font-size: 13px; font-weight: 600; letter-spacing: .04em; color: var(--texto-suave); }
+.campo input, .campo textarea {
+  width: 100%; font: inherit; color: var(--texto);
+  background: rgb(255 255 255 / .6); border: 1px solid var(--linha); border-radius: 12px;
+  padding: 14px 16px; transition: border-color .3s, background .3s; resize: vertical;
+}
+.campo input:focus, .campo textarea:focus { outline: none; border-color: var(--acento); background: #fff; }
+.campo.erro input { border-color: #B3261E; }
+.pote { position: absolute; left: -9999px; }
+.form-status { min-height: 1.4em; margin: 0; font-size: 14px; }
+.form-status.ok { color: #2E6B34; font-weight: 600; }
+.form-status.falha { color: #B3261E; font-weight: 600; }
+
+/* ── Botões ────────────────────────────────────────────────────────────── */
+.botoes { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 1.4em; }
+.botoes--centro { justify-content: center; }
+.botao {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  font: 700 14px/1 var(--fonte-texto); letter-spacing: .1em; text-transform: uppercase; text-decoration: none; cursor: pointer;
+  color: var(--botao-txt); background: var(--botao-bg); border: 2px solid var(--botao-bg); border-radius: 999px;
+  padding: 17px 28px; transition: transform .4s var(--ease), filter .3s, background .3s, color .3s;
+}
+.botao:hover { transform: translateY(-2px); filter: brightness(1.08); }
+.botao--vazado { background: transparent; color: var(--texto); border-color: currentColor; }
+.botao--vazado:hover { background: rgb(243 231 217 / .12); }
+.botao--grande { padding: 20px 36px; font-size: 15px; }
+.secao--marrom .botao:not(.botao--vazado) { --botao-bg: #E66A19; --botao-txt: #1B1C1B; }
+.botao[disabled] { opacity: .6; cursor: progress; }
+
+/* ── WhatsApp flutuante ────────────────────────────────────────────────── */
+.whats {
+  position: fixed; right: max(16px, env(safe-area-inset-right)); bottom: max(18px, env(safe-area-inset-bottom)); z-index: 60;
+  width: 58px; height: 58px; border-radius: 50%; display: grid; place-items: center;
+  background: #25d366; color: #fff; box-shadow: 0 10px 30px rgb(0 0 0 / .35);
+  transform: scale(0); transition: transform .5s var(--ease);
+}
+.whats.visivel { transform: scale(1); }
+.whats:hover { transform: scale(1.07); }
+.whats svg { width: 30px; height: 30px; }
+.whats::after { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 2px solid #25d366; animation: pulso 2.6s ease-out infinite; }
+@keyframes pulso { from { transform: scale(1); opacity: .7; } to { transform: scale(1.6); opacity: 0; } }
+
+/* ── Rodapé ────────────────────────────────────────────────────────────── */
+.rodape { color: var(--texto); padding: clamp(40px, 6vw, 80px) var(--gutter) 40px; }
+.rodape-grade { max-width: var(--largura); margin: 0 auto; display: grid; grid-template-columns: 200px repeat(3, 1fr); gap: 28px 40px; align-items: start; font-size: 15px; }
+.rodape-logo { width: 200px; height: auto; mix-blend-mode: multiply; } /* o fundo branco da logo some sobre o creme */
+.rodape p { margin: 0 0 1em; color: var(--texto); }
+.rodape strong { font-size: 12px; letter-spacing: .2em; text-transform: uppercase; color: var(--rotulo); }
+.rodape .direitos { font-size: 13px; color: var(--texto-suave); }
+
+/* ── Revelar ao rolar ──────────────────────────────────────────────────── */
+.js .revelar { opacity: 0; transform: translateY(40px); transition: opacity 1s var(--ease), transform 1.2s var(--ease); }
+.js .revelar.visto { opacity: 1; transform: none; }
+
+/* ── Celular e tablet ──────────────────────────────────────────────────── */
+@media (max-width: 960px) {
+  .duo, .duo--inverso, .contato-grade, .destaque-casa { grid-template-columns: 1fr; }
+  .duo--inverso > .foto { order: 0; }
+  .duo > .foto { max-width: 420px; }
+  .destaque-casa .foto { max-width: 320px; margin: 0 auto; }
+  .galeria { grid-template-columns: repeat(2, 1fr); }
+  .rodape-grade { grid-template-columns: 1fr 1fr; }
+  .rodape-logo { grid-column: 1 / -1; width: 180px; }
+}
+@media (max-width: 640px) {
+  .secao { padding: 12vh var(--gutter); min-height: auto; }
+  .marca-logo { height: 56px; }
+  .momento, .momento--direita { left: var(--gutter); right: var(--gutter); bottom: 9vh; max-width: none; }
+  .momento--centro { left: 50%; right: auto; }
+  .momento--centro .botoes { flex-wrap: wrap; }
+  .faixa { grid-template-columns: 1fr 1fr; }
+  .faixa .foto:nth-child(2) { margin-top: 0; }
+  .faixa .foto:nth-child(3) { grid-column: 1 / -1; }
+  .faixa .foto:nth-child(3) img { aspect-ratio: 16 / 10; }
+  .lista-cardapio { grid-template-columns: 1fr; }
+  .semana li { grid-template-columns: 1fr; gap: 2px; }
+  .dados div { grid-template-columns: 1fr; gap: 4px; }
+  .form { grid-template-columns: 1fr; }
+  .rodape-grade { grid-template-columns: 1fr; }
+  .botoes .botao { flex: 1 1 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .revelar, .momento:first-of-type { opacity: 1; transform: none; filter: none; }
+  .cine { height: 100svh; }
+  .momento:not(:first-of-type), .cine-dica { display: none; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   EFEITOS DE PÁGINA INTEIRA (todos sob .js: sem JS ou com "reduzir movimento" o conteúdo nasce visível)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Cortina de abertura com a logo */
+.abertura { display: none; }
+.js .abertura {
+  position: fixed; inset: 0; z-index: 120; display: grid; place-content: center; justify-items: center; gap: 26px;
+  background: #1B1C1B; transition: transform 1.1s var(--ease);
+}
+.abertura img { width: min(240px, 56vw); height: auto; border-radius: 16px; border: 1px solid rgb(249 220 199 / .4); animation: aberturaLogo 1.2s var(--ease) both; }
+.abertura-barra { width: min(240px, 56vw); height: 3px; border-radius: 3px; overflow: hidden; background: rgb(249 220 199 / .16); }
+.abertura-barra i { display: block; height: 100%; transform-origin: left; background: linear-gradient(90deg, #8D2D13, #E66A19, #FFB347); box-shadow: 0 0 14px rgb(230 106 25 / .9); animation: aberturaBarra 1.1s var(--ease) both; }
+.abertura.some { transform: translateY(-100%); }
+@keyframes aberturaLogo { from { opacity: 0; transform: translateY(18px) scale(.94); } to { opacity: 1; transform: none; } }
+@keyframes aberturaBarra { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+html.js body.carregando { overflow: hidden; }
+
+/* Barra de progresso em chama */
+.progresso { position: fixed; inset: 0 0 auto; height: 3px; z-index: 95; pointer-events: none; }
+.progresso i { display: block; height: 100%; transform-origin: left; transform: scaleX(0); background: linear-gradient(90deg, #8D2D13, #E66A19, #FFB347); box-shadow: 0 0 12px rgb(230 106 25 / .85); }
+
+/* Luz de brasa que segue o cursor (só mouse) */
+.luz-cursor {
+  position: fixed; left: 0; top: 0; width: 560px; height: 560px; z-index: 45; pointer-events: none; border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(230 106 25 / .17), rgb(230 106 25 / .06) 55%, transparent 100%);
+  opacity: 0; transition: opacity .8s; will-change: transform;
+}
+.luz-cursor.on { opacity: 1; }
+
+/* Títulos: palavra por palavra sobem de uma máscara */
+.js .pal { display: inline-block; overflow: hidden; vertical-align: top; padding: .14em .03em .16em; margin: -.14em 0 -.16em; }
+.js .pal > span { display: inline-block; transform: translateY(118%) rotate(5deg); transform-origin: left bottom; transition: transform 1.1s var(--ease); transition-delay: calc(var(--w, 0) * 85ms + 200ms); }
+.js .revelar.visto .pal > span { transform: none; }
+
+/* Dentro de cada painel, os blocos entram em cascata */
+.js .painel.revelar > *:not(.split), .js .pedido.revelar > *:not(.split) {
+  opacity: 0; transform: translateY(22px);
+  transition: opacity .9s var(--ease), transform 1s var(--ease); transition-delay: calc(var(--i, 0) * 90ms + 300ms);
+}
+.js .painel.revelar.visto > *:not(.split), .js .pedido.revelar.visto > *:not(.split) { opacity: 1; transform: none; }
+
+/* Listas: cada item desliza da esquerda, um depois do outro */
+.js .lista-cardapio li, .js .semana li, .js .etiquetas li {
+  opacity: 0; translate: -28px 0;
+  transition: opacity .8s var(--ease) calc(var(--j, 0) * 85ms + 700ms), translate .9s var(--ease) calc(var(--j, 0) * 85ms + 700ms), background .4s;
+}
+.js .revelar.visto .lista-cardapio li, .js .revelar.visto .semana li, .js .revelar.visto .etiquetas li { opacity: 1; translate: 0 0; }
+.semana li:hover { background: rgb(141 45 19 / .09); }
+.etiquetas li { transition: border-color .3s, color .3s; }
+.etiquetas li:hover { border-color: var(--acento); color: var(--acento); }
+
+/* Fotos em arco se revelam subindo, como uma cortina */
+/* O recorte vai na <img> (não na moldura): o Chrome não "vê" no IntersectionObserver um alvo totalmente recortado */
+.js .foto--arco.revelar { opacity: 1; transform: none; background: transparent; border-color: transparent; transition: background 1s, border-color 1s; }
+.js .foto--arco.revelar img { clip-path: inset(100% 0 0 0); transition: clip-path 1.6s var(--ease), scale 1.2s var(--ease); }
+.js .foto--arco.revelar.visto { background: #1B1C1B; border-color: var(--linha); }
+.js .foto--arco.revelar.visto img { clip-path: inset(0 0 0 0); }
+.js .foto--arco.revelar figcaption { opacity: 0; transition: opacity 1s var(--ease) 1.2s; }
+.js .foto--arco.revelar.visto figcaption { opacity: 1; }
+.js .galeria-item.revelar, .js .faixa .foto.revelar { transition-delay: calc((var(--k, 0) % 4) * 110ms); }
+
+/* Rótulo ganha um fio que cresce */
+.rotulo::after { content: ""; display: block; height: 1px; width: 0; margin-top: 12px; background: currentColor; opacity: .7; transition: width 1.2s var(--ease) .5s; }
+.visto .rotulo::after, .pedido .rotulo::after { width: 56px; }
+.js .pedido:not(.visto) .rotulo::after { width: 0; }
+.pedido .rotulo::after, .painel--nota .rotulo::after { margin-inline: auto; }
+
+/* Calor pulsando no pé das seções escuras e da seção de pedido */
+.secao:not(.secao--clara)::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 42%; z-index: -1; pointer-events: none;
+  background: radial-gradient(65% 100% at 50% 100%, rgb(230 106 25 / .24), transparent 72%);
+  animation: calor 4.2s ease-in-out infinite alternate;
+}
+.secao--marrom::after { background: radial-gradient(65% 100% at 50% 100%, rgb(255 150 50 / .34), transparent 72%) !important; }
+@keyframes calor { from { opacity: .5; transform: scaleX(.94); } to { opacity: 1; transform: scaleX(1.06); } }
+
+/* Faixas de texto em movimento */
+.faixa-texto { position: relative; overflow: hidden; padding: clamp(14px, 1.8vw, 26px) 0; }
+.faixa-texto--laranja { background: #E66A19; color: #1B1C1B; }
+.faixa-texto--marrom { background: #8D2D13; color: #F9DCC7; }
+.faixa-trilho { display: flex; width: max-content; white-space: nowrap; will-change: transform; }
+.faixa-trilho span { font: italic 800 clamp(28px, 4.6vw, 68px)/1.1 var(--fonte-titulo); text-transform: uppercase; letter-spacing: .01em; padding-inline: .45em; }
+.faixa-trilho i { font-style: normal; align-self: center; font-size: clamp(16px, 2vw, 28px); opacity: .8; }
+.faixa-texto--marrom .faixa-trilho span { color: transparent; -webkit-text-stroke: 1.5px #F9DCC7; }
+
+/* Botões: brilho que varre, imã do cursor e CTA do topo pulsando */
+.botao, .menu-cta { position: relative; overflow: hidden; translate: var(--mx, 0) var(--my, 0); transition: transform .4s var(--ease), filter .3s, background .3s, color .3s, translate .3s var(--ease); }
+.botao::after, .menu-cta::after { content: ""; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / .38) 50%, transparent 70%); transform: translateX(-130%); transition: transform .9s var(--ease); pointer-events: none; }
+.botao:hover::after, .menu-cta:hover::after { transform: translateX(130%); }
+.js .menu-cta { animation: brilho 3.2s ease-in-out infinite; }
+@keyframes brilho { 0%, 100% { box-shadow: 0 0 0 0 rgb(230 106 25 / 0); } 50% { box-shadow: 0 0 26px 3px rgb(230 106 25 / .5); } }
+
+@media (max-width: 640px) {
+  .galeria-item:nth-child(4n + 2), .galeria-item:nth-child(4n + 4) { margin-top: 0; }
+  .galeria-item:nth-child(2n) { margin-top: 24px; }
+  .luz-cursor { display: none; }
+}
+/* ══════════════════════════════════════════════════════════════════════════
+   CENAS EM VÍDEO (capítulos): a rolagem toca o filme, com barras de cinema e título de capítulo
+   ══════════════════════════════════════════════════════════════════════════ */
+.cena { position: relative; height: var(--altura, 300vh); background: #1B1C1B; }
+.cena-palco { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background: #1B1C1B center / cover no-repeat; --b: 0; }
+.cena-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+/* Barras pretas de cinema 2.39:1 que entram no começo da cena e saem no fim */
+.cena-barra { position: absolute; left: 0; right: 0; z-index: 3; height: calc(var(--b) * 9vh); background: #000; pointer-events: none; }
+.cena-barra--cima { top: 0; }
+.cena-barra--baixo { bottom: 0; }
+/* Grade de cor quente por cima do filme, para as cenas parecerem da mesma campanha */
+.cena-palco::after { content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none; mix-blend-mode: soft-light; background: radial-gradient(90% 70% at 50% 60%, rgb(230 106 25 / .22), transparent 70%); }
+.cena .cine-vinheta { z-index: 2; }
+.cena .momento { z-index: 4; bottom: calc(9vh + 7vh); }
+.cena .momento--centro { bottom: calc(9vh + 5vh); }
+/* Título de capítulo: grande, sem painel, no alto à esquerda */
+.cena .momento--capitulo { top: 20vh; bottom: auto; left: var(--gutter); right: auto; max-width: none; }
+.cena .momento--capitulo .painel { background: none; border: 0; padding: 0; backdrop-filter: none; -webkit-backdrop-filter: none; }
+.cap-n { display: block; font: 700 clamp(12px, 1.1vw, 15px)/1 var(--fonte-texto); letter-spacing: .5em; text-transform: uppercase; color: var(--acento); margin-bottom: 18px; }
+.cap-t { display: block; font: italic 800 clamp(54px, 10vw, 160px)/.95 var(--fonte-titulo); text-transform: uppercase; color: var(--texto); text-shadow: 0 6px 60px rgb(0 0 0 / .6); }
+@media (max-width: 640px) {
+  .cena .momento, .cena .momento--direita { bottom: calc(9vh + 4vh); left: var(--gutter); right: var(--gutter); max-width: none; }
+  .cena .momento--centro { left: 50%; right: auto; }
+  .cena .momento--capitulo { top: 17vh; right: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cena { height: 80svh; }
+  .cena .momento:not(:first-of-type) { display: none; }
+  .cena .cena-barra { display: none; }
+}
+/* ══════════════════════════════════════════════════════════════════════════
+   ELEGÂNCIA CINEMA + DESEMPENHO (sobrescreve regras anteriores)
+   Sem caixas atrás dos textos: a leitura vem de gradientes sobre o filme, sombra suave e tipografia.
+   ══════════════════════════════════════════════════════════════════════════ */
+.painel, .painel--vidro {
+  background: none; border: 0; border-radius: 0; padding: 0;
+  backdrop-filter: none; -webkit-backdrop-filter: none;
+}
+.topo.rolou { background: rgb(27 28 27 / .9); backdrop-filter: none; -webkit-backdrop-filter: none; }
+.menu a { text-shadow: 0 1px 14px rgb(0 0 0 / .6); }
+
+/* Grão de filme estático (animado repintava a tela inteira o tempo todo) */
+body::after { inset: 0; animation: none; opacity: .05; }
+
+/* Leitura sobre o filme: gradiente embaixo (texto) e em cima (menu) + vinheta nas bordas */
+.cine-vinheta, .cena .cine-vinheta {
+  background:
+    radial-gradient(120% 90% at 50% 45%, transparent 55%, rgb(0 0 0 / .5) 100%),
+    linear-gradient(to top, rgb(10 10 9 / .82) 0%, rgb(10 10 9 / .45) 26%, transparent 54%),
+    linear-gradient(to bottom, rgb(10 10 9 / .6) 0%, transparent 20%);
+}
+.momento { filter: none !important; max-width: 580px; transition: opacity .55s var(--ease), transform .75s var(--ease); }
+.momento.ativo { filter: none !important; }
+.titulo-abertura, .destaque, .apoio { text-shadow: 0 2px 30px rgb(0 0 0 / .65), 0 1px 3px rgb(0 0 0 / .5); }
+.titulo-abertura { font-size: clamp(30px, 4.2vw, 64px); letter-spacing: .012em; }
+.apoio { color: var(--texto); font-size: clamp(15px, 1.25vw, 19px); letter-spacing: .04em; opacity: .92; }
+.destaque { font-weight: 600; letter-spacing: .005em; }
+/* Fio de luz no alto de cada legenda: o único "enfeite", no estilo de crédito de cinema */
+.momento .painel::before {
+  content: ""; display: block; width: 56px; height: 2px; margin-bottom: 20px;
+  background: var(--acento); box-shadow: 0 0 16px rgb(230 106 25 / .7);
+}
+.momento--direita { text-align: right; }
+.momento--direita .painel::before { margin-left: auto; }
+.momento--centro .painel::before { margin-inline: auto; }
+.cena .momento--capitulo .painel::before { display: none; }
+
+/* Seções: ritmo mais enxuto e tipografia arejada, sem cartões */
+@media (min-width: 641px) { .secao { padding: 11vh var(--gutter); min-height: 78vh; } }
+.duo { gap: clamp(28px, 5vw, 80px); }
+.secao h2 { font-weight: 800; letter-spacing: -.012em; }
+.painel--nota { max-width: 820px; }
+.form { margin-top: 26px; }
+.mapa { border-radius: 4px; }
+
+/* Calor: só opacidade (barato de compor) */
+@keyframes calor { from { opacity: .55; } to { opacity: 1; } }
+.secao:not(.secao--clara)::after { animation-duration: 5s; }
+
+/* Entradas mais rápidas: a página responde ao dedo, não faz cerimônia */
+.js .revelar { transition-duration: .7s, .85s; }
+.js .pal > span { transition-duration: .8s; transition-delay: calc(var(--w, 0) * 50ms + 40ms); }
+.js .painel.revelar > *:not(.split), .js .pedido.revelar > *:not(.split) { transition-duration: .65s, .8s; transition-delay: calc(var(--i, 0) * 55ms + 100ms); }
+.js .lista-cardapio li, .js .semana li, .js .etiquetas li {
+  transition: opacity .55s var(--ease) calc(var(--j, 0) * 55ms + 220ms), translate .7s var(--ease) calc(var(--j, 0) * 55ms + 220ms), background .4s;
+}
+.js .foto--arco.revelar img { transition: clip-path 1.1s var(--ease), scale 1.2s var(--ease); }
+.rotulo::after { transition: width 1s var(--ease) .2s; }
+.js .galeria-item.revelar, .js .faixa .foto.revelar { transition-delay: calc((var(--k, 0) % 4) * 70ms); }
+/* Desempenho: grão só sobre o filme (hero e cenas), não na página inteira; calor estático (sem camada animada) */
+body::after { display: none; }
+.cine-palco::before, .cena-palco::before {
+  content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none; opacity: .07;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.secao:not(.secao--clara)::after { animation: none; opacity: .9; }
+/* Modo leve (ligado sozinho pelo JS quando a página detecta travadas) */
+html.leve .luz-cursor, html.leve .secao::after, html.leve .cena-palco::after, html.leve .cine-palco::before, html.leve .cena-palco::before { display: none; }
+html.leve .js .menu-cta, html.leve .menu-cta { animation: none; }
+/* Mapa sob demanda: a capa não custa nada; o mapa interativo só carrega quando a pessoa pede */
+.mapa { min-height: 280px; display: grid; place-items: center; padding: 28px; text-align: center; background: linear-gradient(135deg, rgb(41 43 41 / .05), rgb(141 45 19 / .12)); }
+.mapa:has(iframe) { padding: 0; }
+.mapa-capa p { margin: 14px 0 0; color: var(--texto); font-family: var(--fonte-titulo); font-size: clamp(18px, 1.6vw, 24px); line-height: 1.3; }
+.mapa-pino { width: 26px; height: 34px; color: var(--acento); }
+.mapa-capa .botoes { margin-top: 20px; }
+/* Sem mistura de cor cara nas cenas: gradiente comum */
+.cena-palco::after { mix-blend-mode: normal; background: radial-gradient(90% 70% at 50% 60%, rgb(230 106 25 / .10), transparent 70%); }
+/* ══════════════════════════════════════════════════════════════════════════
+   AJUSTES: menu enxuto, logo sem fundo, frase do hero mais alta, SEM traços decorativos
+   ══════════════════════════════════════════════════════════════════════════ */
+/* Menu de cima: barra fina (era ~100 px, agora ~62 px) */
+.topo { padding: 5px var(--gutter); gap: 14px; }
+.marca-logo { height: 52px; width: auto; border: 0; border-radius: 0; filter: drop-shadow(0 2px 10px rgb(0 0 0 / .55)); }
+.menu { font-size: clamp(11px, .82vw, 13px); gap: clamp(12px, 1.6vw, 24px); letter-spacing: .09em; }
+.menu-cta { padding: 8px 15px; }
+.topo.rolou { background: rgb(22 23 22 / .92); }
+
+/* Cortina de abertura: logo sem moldura */
+.abertura img { border: 0; border-radius: 0; width: min(260px, 60vw); filter: drop-shadow(0 6px 30px rgb(0 0 0 / .6)); }
+
+/* Rodapé: logo colorida sem fundo (não precisa mais do truque de mistura) */
+.rodape-logo { mix-blend-mode: normal; }
+
+/* Frase do hero mais acima e mais larga (3 linhas em vez de 4) */
+.cine .momento { bottom: 19vh; max-width: 760px; }
+.cine .momento--direita { max-width: 640px; }
+.cine .momento--centro { bottom: 14vh; max-width: none; }
+
+/* Sem traços: fios das legendas, sublinhado dos rótulos, divisórias e a linha da dica "role" */
+.momento .painel::before, .cena .momento--capitulo .painel::before { display: none; }
+.rotulo::after, .visto .rotulo::after, .pedido .rotulo::after { display: none; }
+.cine-dica span { display: none; }
+.selo { border-top: 0; padding-top: 0; }
+.lista-cardapio a { border-bottom: 0; padding: 11px 0; }
+.semana li { border-bottom: 0; }
+.semana li.hoje { border-bottom: 0; }
+.dados div { border-bottom: 0; padding-bottom: 0; }
+.dados { gap: 22px; }
+
+@media (max-width: 640px) {
+  .marca-logo { height: 44px; }
+  .topo { padding: 5px var(--gutter); }
+  .cine .momento, .cine .momento--direita { bottom: 15vh; max-width: none; }
+  .cine .momento--centro { bottom: 12vh; }
+}
+/* ══════════════════════════════════════════════════════════════════════════
+   ESCALA PROPORCIONAL: o site cresce junto com a tela (notebook 1366 → Full HD 1920 → 2560)
+   ══════════════════════════════════════════════════════════════════════════ */
+:root { --largura: clamp(1100px, 86vw, 1560px); }
+body { font-size: clamp(16px, 1.05vw, 21px); }
+h1 { font-size: clamp(34px, 5.4vw, 96px); }
+h2 { font-size: clamp(30px, 3.8vw, 74px); }
+h3 { font-size: clamp(21px, 1.8vw, 34px); }
+.h-grande { font-size: clamp(26px, 2.8vw, 54px); }
+.titulo-abertura { font-size: clamp(30px, 4.2vw, 86px); }
+.apoio { font-size: clamp(15px, 1.25vw, 26px); }
+.destaque { font-size: clamp(24px, 2.8vw, 56px); }
+.cena .momento--centro .destaque { font-size: clamp(22px, 2.3vw, 46px); }
+.cine .momento { max-width: min(760px, 44vw); }
+.cine .momento--direita { max-width: min(640px, 38vw); }
+.duo > .foto { max-width: clamp(420px, 36vw, 680px); }
+.rotulo { font-size: clamp(12px, .85vw, 16px); }
+.botao { font-size: clamp(14px, .95vw, 18px); }
+.menu { font-size: clamp(11px, .82vw, 15px); }
+.menu-cta { padding: 8px 16px; }
+.cap-t { font-size: clamp(54px, 10vw, 200px); }
+.nota strong { font-size: clamp(72px, 9vw, 170px); }
+.selo strong { font-size: clamp(40px, 4vw, 80px); }
+
+/* Logo do topo: legível, sem fundo (o menu continua fino: ~68 px) */
+.topo { padding: 4px var(--gutter); }
+.marca-logo { height: clamp(58px, 4.4vw, 78px); }
+.abertura img { width: min(300px, 62vw); }
+@media (max-width: 640px) {
+  .marca-logo { height: 50px; }
+  .cine .momento, .cine .momento--direita { max-width: none; }
+}
+/* Frase do hero um pouco mais alta */
+.cine .momento { bottom: 23vh; }
+.cine .momento--centro { bottom: 15vh; }
+@media (max-width: 640px) { .cine .momento, .cine .momento--direita { bottom: 17vh; } .cine .momento--centro { bottom: 13vh; } }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MENU MENOR + HISTÓRIA/SEÇÕES MAIS COMPACTAS
+   ══════════════════════════════════════════════════════════════════════════ */
+/* Barra de cima: no topo da página é transparente e a logo é grande; ao rolar vira uma barra fina (~46 px) e a logo encolhe */
+.topo { padding: 6px var(--gutter); transition: background .35s var(--ease), padding .35s var(--ease); }
+.marca-logo { height: clamp(60px, 4.6vw, 80px); transition: height .35s var(--ease); }
+.topo.rolou { padding: 3px var(--gutter); background: rgb(18 19 18 / .94); }
+.topo.rolou .marca-logo { height: clamp(36px, 2.7vw, 46px); }
+.topo.rolou .menu { font-size: clamp(11px, .78vw, 14px); }
+.topo.rolou .menu-cta { padding: 6px 14px; }
+@media (max-width: 640px) {
+  .marca-logo { height: 52px; }
+  .topo.rolou .marca-logo { height: 34px; }
+}
+
+/* Seções em duas colunas (história, cardápio, ilhas): foto e texto menores, cabem na tela com folga */
+.secao { min-height: 0; padding: 9vh var(--gutter); }
+.secao--curta { min-height: 60vh; }
+#avaliacoes { min-height: 58vh; }
+.duo { gap: clamp(24px, 4vw, 72px); }
+.duo > .foto { max-width: clamp(300px, 27vw, 540px); }
+.duo h2 { font-size: clamp(28px, 2.9vw, 56px); }
+.duo p { font-size: clamp(15px, .98vw, 19px); line-height: 1.6; max-width: 62ch; }
+.duo .rotulo { margin-bottom: 14px; }
+#historia .painel p { margin-bottom: .8em; }
+.selo { margin-top: 1em; }
+.selo strong { font-size: clamp(34px, 3.2vw, 64px); }
+.lista-cardapio a, .semana li { font-size: clamp(15px, .98vw, 19px); }
+@media (max-width: 960px) { .duo > .foto { max-width: 340px; } }
+@media (max-width: 640px) { .secao { padding: 9vh var(--gutter); } }
+/* Faixas de texto em movimento: finas e discretas (~34 px de altura) */
+.faixa-texto { padding: clamp(7px, .6vw, 10px) 0; }
+.faixa-trilho span { font: italic 700 clamp(12px, .95vw, 17px)/1.2 var(--fonte-titulo); letter-spacing: .14em; padding-inline: 1.6em; }
+.faixa-trilho i { font-size: clamp(8px, .6vw, 11px); }
+.faixa-texto--marrom .faixa-trilho span { color: inherit; -webkit-text-stroke: 0; }
+/* ══════════════════════════════════════════════════════════════════════════
+   ESCALA ÚNICA (referência: tela de 1440 px). Nada grande nem exagerado; tudo cresce com a tela até um teto.
+   Texto 16 px · títulos de seção ~33 px · hero ~47 px · rótulos 12 px · botões 13 px
+   ══════════════════════════════════════════════════════════════════════════ */
+:root { --largura: clamp(1040px, 82vw, 1440px); }
+body { font-size: clamp(15px, 1.1vw, 19px); line-height: 1.6; }
+h1 { font-size: clamp(28px, 3.3vw, 62px); }
+h2, .duo h2 { font-size: clamp(24px, 2.3vw, 46px); line-height: 1.12; }
+h3 { font-size: clamp(18px, 1.4vw, 28px); }
+.h-grande { font-size: clamp(22px, 1.9vw, 38px); }
+.pedido h2 { font-size: clamp(26px, 2.7vw, 52px); }
+.titulo-abertura { font-size: clamp(28px, 3.3vw, 64px); line-height: 1.06; }
+.apoio { font-size: clamp(14px, 1.05vw, 21px); }
+.destaque, .cena .momento--centro .destaque { font-size: clamp(20px, 1.8vw, 36px); }
+.cap-t { font-size: clamp(40px, 4.6vw, 92px); }
+.nota strong { font-size: clamp(52px, 5vw, 100px); }
+.estrelas { font-size: clamp(20px, 2vw, 38px); }
+.selo strong { font-size: clamp(30px, 2.3vw, 46px); }
+.selo span { font-size: clamp(11px, .8vw, 14px); }
+.rotulo { font-size: clamp(11px, .8vw, 14px); margin-bottom: 12px; }
+p { margin-bottom: .9em; }
+.duo p, .painel p { font-size: clamp(15px, 1vw, 18px); }
+.botao { font-size: clamp(12px, .85vw, 15px); padding: clamp(13px, 1vw, 17px) clamp(22px, 1.8vw, 32px); }
+.botao--grande { font-size: clamp(13px, .95vw, 16px); padding: clamp(14px, 1.1vw, 19px) clamp(26px, 2.2vw, 38px); }
+.etiquetas li { font-size: clamp(12px, .85vw, 15px); padding: 7px 14px; }
+.lista-cardapio a, .semana li { font-size: clamp(14px, .95vw, 17px); }
+.dados dd, .dados dt { font-size: clamp(14px, .95vw, 17px); }
+.dados dt { font-size: clamp(10px, .75vw, 13px); }
+.campo input, .campo textarea { padding: 12px 14px; font-size: clamp(14px, .95vw, 17px); }
+.campo label { font-size: clamp(12px, .8vw, 14px); }
+
+/* Seções e espaços */
+.secao { padding: 8vh var(--gutter); gap: clamp(20px, 2.4vw, 40px); }
+.secao--curta { min-height: 50vh; }
+#avaliacoes { min-height: 48vh; }
+.duo { gap: clamp(24px, 3.6vw, 64px); }
+.duo > .foto { max-width: clamp(280px, 24vw, 470px); }
+.mapa { min-height: 230px; padding: 22px; }
+
+/* Fotos mais baixas: buffet (3 lado a lado), galeria e "famoso na casa" */
+.faixa { gap: 14px; }
+.faixa .foto img { aspect-ratio: 4 / 3; }
+.faixa .foto:nth-child(2) { margin-top: 24px; }
+.galeria { gap: 10px; }
+.galeria-item img { aspect-ratio: 1 / 1; }
+.galeria-item:nth-child(4n + 2) { margin-top: 24px; }
+.galeria-item:nth-child(4n + 4) { margin-top: 12px; }
+.destaque-casa { grid-template-columns: minmax(0, clamp(220px, 19vw, 360px)) minmax(0, 1fr); }
+.destaque-casa .h-grande { margin-bottom: .4em; }
+
+/* Rodapé */
+.rodape { padding: clamp(32px, 4.5vw, 64px) var(--gutter) 28px; }
+.rodape-grade { grid-template-columns: clamp(120px, 11vw, 170px) repeat(3, 1fr); font-size: clamp(13px, .9vw, 16px); gap: 20px 32px; }
+.rodape-logo { width: clamp(120px, 11vw, 170px); }
+
+/* Filmes: legendas e barras proporcionais */
+.cena .momento, .cine .momento { max-width: min(640px, 42vw); }
+.cena-barra { height: calc(var(--b) * 7vh); }
+
+@media (max-width: 960px) {
+  .duo > .foto { max-width: 300px; }
+  .destaque-casa { grid-template-columns: 1fr; }
+  .rodape-grade { grid-template-columns: 1fr 1fr; }
+  .rodape-logo { width: 130px; }
+}
+@media (max-width: 640px) {
+  body { font-size: 15px; }
+  h2, .duo h2 { font-size: 24px; }
+  .pedido h2 { font-size: 26px; }
+  .titulo-abertura { font-size: 28px; }
+  .destaque, .cena .momento--centro .destaque { font-size: 21px; }
+  .cap-t { font-size: 46px; }
+  .nota strong { font-size: 60px; }
+  .secao { padding: 7vh var(--gutter); }
+  .cena .momento, .cine .momento, .cine .momento--direita { max-width: none; }
+  .faixa .foto img { aspect-ratio: 4 / 3; }
+  .faixa .foto:nth-child(3) img { aspect-ratio: 16 / 9; }
+  .galeria-item:nth-child(2n) { margin-top: 18px; }
+  .rodape-grade { grid-template-columns: 1fr; }
+}
+/* Retoques finais de escala */
+.cine .momento { max-width: min(920px, 45vw); }
+.cine .momento--direita { max-width: min(640px, 38vw); }
+.cine .momento--centro { max-width: none; }
+@media (max-width: 640px) {
+  .etiquetas { gap: 8px; }
+  .etiquetas li { font-size: 13px; padding: 6px 12px; }
+  .cine .momento, .cine .momento--direita { max-width: none; }
+}
+/* Título do hero: coluna estreita à esquerda (3 linhas), sem cobrir a picanha */
+@media (min-width: 961px) { .cine .momento { max-width: 34vw; } .cine .momento--direita { max-width: min(640px, 38vw); } .cine .momento--centro { max-width: none; } }
+/* ══════════════════════════════════════════════════════════════════════════
+   FONTES PRÓPRIAS (sem depender do Google: carregam mais rápido e não bloqueiam a pintura)
+   ══════════════════════════════════════════════════════════════════════════ */
+@font-face { font-family: "Figtree"; font-style: normal; font-weight: 400 700; font-display: swap; src: url("assets/fonts/figtree.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Playfair Display"; font-style: normal; font-weight: 600 800; font-display: swap; src: url("assets/fonts/playfair.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   CELULAR E TABLET: menu, áreas seguras (notch), toques e formulário
+   ══════════════════════════════════════════════════════════════════════════ */
+html { -webkit-tap-highlight-color: transparent; }
+.topo { padding-left: max(var(--gutter), env(safe-area-inset-left)); padding-right: max(var(--gutter), env(safe-area-inset-right)); padding-top: max(6px, env(safe-area-inset-top)); }
+.topo.rolou { padding-top: max(3px, env(safe-area-inset-top)); }
+.rodape { padding-bottom: max(28px, env(safe-area-inset-bottom)); }
+.menu-toggle, .topo-cta { display: none; }
+body.menu-aberto { overflow: hidden; }
+
+@media (max-width: 1100px) {
+  .topo { gap: 10px; }
+  .marca { margin-right: auto; }
+  .topo-cta { display: inline-flex; align-items: center; min-height: 38px; padding: 8px 15px; font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; text-decoration: none; color: var(--acento-texto); background: var(--acento); border-radius: 999px; }
+  .menu-toggle { display: inline-flex; flex-direction: column; justify-content: center; align-items: center; gap: 7px; width: 44px; height: 44px; padding: 0; border: 0; background: none; color: #F3E7D9; cursor: pointer; }
+  .menu-toggle span { display: block; width: 24px; height: 2px; background: currentColor; border-radius: 2px; transition: transform .35s var(--ease); }
+  .topo.menu-aberto .menu-toggle span:nth-child(1) { transform: translateY(4.5px) rotate(45deg); }
+  .topo.menu-aberto .menu-toggle span:nth-child(2) { transform: translateY(-4.5px) rotate(-45deg); }
+  /* O menu vira uma tela escura com os links grandes (abre pelo botão) */
+  .menu {
+    position: fixed; inset: 0; z-index: -1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: clamp(10px, 2.6vh, 22px); background: rgb(14 15 14 / .98); font-size: clamp(15px, 4.4vw, 22px); letter-spacing: .18em;
+    opacity: 0; visibility: hidden; transition: opacity .35s var(--ease), visibility .35s;
+  }
+  .topo.menu-aberto .menu { opacity: 1; visibility: visible; }
+  .menu a:not(.menu-cta) { display: block !important; padding: 10px 16px; opacity: 1; font-family: var(--fonte-titulo); font-weight: 600; text-transform: none; letter-spacing: .02em; font-size: clamp(22px, 6vw, 30px); }
+  .menu .menu-cta { display: none; }
+}
+
+/* Telas de toque: alvos de pelo menos ~44 px e campos sem zoom automático do iPhone (precisam de 16 px) */
+@media (pointer: coarse) {
+  .botao { min-height: 46px; }
+  .lista-cardapio a { padding: 14px 0; }
+  .rodape a { display: inline-block; padding: 5px 0; }
+  .campo input, .campo textarea { font-size: 16px; }
+  .whats { width: 56px; height: 56px; }
+}
+
+@media (max-width: 640px) {
+  .topo.rolou { padding-top: max(4px, env(safe-area-inset-top)); padding-bottom: 4px; }
+  .rotulo { font-size: 12px; }
+  .dados dt { font-size: 11px; }
+  .campo label { font-size: 13px; }
+  .rodape-grade { font-size: 14px; }
+  .lightbox { max-width: 94vw; }
+  .form-status { font-size: 14px; }
+}
+
+/* Celular deitado (pouca altura): o hero e as cenas se ajustam */
+@media (orientation: landscape) and (max-height: 520px) {
+  .cine .momento { bottom: 12vh; max-width: 52vw; }
+  .cine .momento--centro { bottom: 9vh; }
+  .apoio { display: none; }
+  .cena .momento--capitulo { top: 16vh; }
+  .cap-t { font-size: 44px; }
+  .cena .momento, .cena .momento--direita { bottom: calc(7vh + 4vh); }
+  .secao { padding: 7vh var(--gutter); }
+  .topo.rolou { padding-top: 2px; padding-bottom: 2px; }
+  .abertura img { width: 160px; }
+}
+/* Celular: frase do hero mais acima */
+@media (max-width: 640px) { .cine .momento, .cine .momento--direita { bottom: 24vh; } .cine .momento--centro { bottom: 15vh; } }

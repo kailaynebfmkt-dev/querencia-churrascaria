@@ -1,0 +1,133 @@
+{
+  "nome": "Churrascaria Querência",
+  "nome_institucional": "Restaurante e Churrascaria Querência",
+  "slug": "querencia",
+  "fundacao": 1989,
+  "negocio": "Restaurante e churrascaria tradicional: gastronomia brasileira, buffet e churrasco gaúcho. Pedidos online e em casa.",
+  "publico": "Famílias, casais, grupos de amigos, trabalhadores da região, moradores de Esteio e visitantes. Esteio/RS.",
+  "endereco": "Rua 24 de Agosto, 188 - Centro, Esteio/RS",
+  "diferenciais": [
+    "Buffet completo + churrasco gaúcho",
+    "37 anos de história (desde 1989), confirmado pelo cliente. Observação: a logo oficial traz '35 anos de história' e não deve ser alterada; no texto do site usar '37 anos'.",
+    "PÃO DE ALHO ARTESANAL, famoso na casa",
+    "Cardápio diferente todos os dias",
+    "Uma ilha temática por dia da semana",
+    "Sobremesas; a banoffe é muito elogiada pelos clientes",
+    "Atendimento elogiado",
+    "Comida que chega quentinha no delivery",
+    "Espaço kids",
+    "Estacionamento cortesia ao lado",
+    "Carnes, acompanhamentos e frutos do mar"
+  ],
+  "ilhas_da_semana": {
+    "segunda": "Ilha de Pastel",
+    "terca": "Feijoada Mexicana",
+    "quarta": "Ilha de Pizza + Costelão 12h",
+    "quinta": "Ilha de Sushi",
+    "sexta": "Ilha de Hambúrguer",
+    "sabado": "Fechado (confirmado pelo cliente: sábado não abre)",
+    "domingo": "Cardápio especial de domingo (descrição genérica, sem citar pratos)"
+  },
+  "identidade": {
+    "cores": {
+      "bege_pessego": "#F9DCC7",
+      "marrom_avermelhado": "#8D2D13",
+      "grafite": "#292B29",
+      "laranja_fogo": "#E66A19",
+      "creme": "#F3E7D9",
+      "fundo_escuro": "#292B29",
+      "fundo_claro": "#F3E7D9",
+      "acento": "#E66A19"
+    },
+    "fontes": {
+      "titulo": "serifada marcante (a definir na aprovação: Playfair Display ou Fraunces)",
+      "texto": "sans moderna e limpa",
+      "chamadas": "caixa alta"
+    },
+    "clima": ["tradição", "gaúcho", "familiar", "acolhedor", "artesanal", "sabor", "qualidade", "churrasco", "história"],
+    "tema": "alternado escuro/claro"
+  },
+  "logo": "fonte/logo-original.png",
+  "logo_obs": "PNG 1080x1920 com fundo bege #F9DCC7 (não transparente). Usar sem modificar a arte; apenas enquadrar. Ideal: versão transparente/SVG.",
+  "copy": {
+    "frase_abertura": "O VERDADEIRO SABOR DO CHURRASCO GAÚCHO.",
+    "complemento_abertura": "Uma tradição de sabor e qualidade desde 1989.",
+    "frases": [
+      "O verdadeiro sabor do churrasco gaúcho!",
+      "Tradição e sabor desde 1989.",
+      "Mais de 35 anos de história.",
+      "Venha viver essa experiência!",
+      "Uma tradição que reúne pessoas à mesa."
+    ],
+    "texto_home": "Há mais de 35 anos, a tradição e o sabor fazem parte da nossa história. Na Churrascaria Querência, cada refeição é preparada para proporcionar uma experiência especial, com o verdadeiro sabor da gastronomia e do churrasco gaúcho.\n\nMais do que servir refeições, queremos reunir pessoas, celebrar momentos e manter viva a tradição de receber bem.",
+    "texto_historia": "Uma história construída com tradição, dedicação e muito sabor. Desde 1989, a Churrascaria Querência faz parte da história de quem valoriza uma boa refeição e momentos especiais à mesa.",
+    "depoimentos_reais": [],
+    "depoimentos_obs": "Cliente pediu as melhores avaliações do Google. Busca na web (2026-11-22) não achou avaliações verificáveis desta unidade. Usar SOMENTE textos reais colados/printados pelo cliente, com autor como aparece no Google. Sem eles, a seção mostra apenas nota 4,4, 643 avaliações e link."
+  },
+  "ctas": {
+    "primario": "CONHEÇA NOSSO CARDÁPIO",
+    "secundario": "FAÇA SEU PEDIDO",
+    "delivery": "PEÇA DELIVERY"
+  },
+  "delivery_url": "https://restaurantequerencia.abbas.delivery/webapp/globais/cardapio/CF8MYS?utm_source=site&utm_medium=botao_delivery",
+  "delivery_obs": "Link completo recebido era o mesmo cardápio com utm_source=ig/utm_content=link_in_bio e fbclid (código de clique individual do Meta). Decisão: usar o link limpo, sem fbclid, e com utm_source=site para não contar visitas do site como vindas do Instagram.",
+  "referencias": [
+    "https://www.instagram.com/churrascaria_querencia/",
+    "https://restaurantequerencia.abbas.delivery/webapp/globais/cardapio/CF8MYS"
+  ],
+  "cardapio_url": "https://restaurantequerencia.abbas.delivery/webapp/globais/cardapio/CF8MYS",
+  "cardapio_categorias": ["Pratos do dia", "Combos", "Marmitex", "Bebidas", "Porções", "Bomboniere e sobremesas"],
+  "instagram": "@churrascaria_querencia",
+  "whatsapp": {
+    "numero": "5551986009524",
+    "mensagem": "Olá! Conheci a Churrascaria Querência pelo site e gostaria de mais informações sobre o cardápio e os pedidos. Poderiam me ajudar?"
+  },
+  "email_contato": "",
+  "email_obs": "Cliente disse que o e-mail do formulário NÃO é necessário. Decisão: formulário (nome, telefone/WhatsApp, e-mail, assunto, mensagem) monta a mensagem e abre o WhatsApp (51) 98600-9524, sem envio por e-mail.",
+  "horarios": {
+    "instagram": "Domingo a sexta, 11h às 14h30",
+    "sistema_de_pedidos": "9h45 às 14h45",
+    "sabado": "fechado",
+    "status": "CONFLITO: confirmar com o cliente antes de publicar"
+  },
+  "google": { "nota": 4.4, "avaliacoes": 643 },
+  "secoes": [
+    "inicio",
+    "nossa historia",
+    "nosso cardapio",
+    "buffet e gastronomia",
+    "galeria de fotos",
+    "avaliacoes dos clientes",
+    "localizacao e contato",
+    "faca seu pedido",
+    "rodape"
+  ],
+  "midia_real": {
+    "pasta": "fonte/fotos-originais (11 PNG 1080x1350, retrato 4:5)",
+    "fotos": {
+      "1": "buffet frio: queijo, frios, saladas, salão ao fundo",
+      "2": "frios, queijo, canapés (detalhe)",
+      "3": "logo dourada monocromática em fundo branco (não é foto)",
+      "4": "marmitex: costela, feijão, polenta, mandioca",
+      "5": "pão de alho (bandeja), frango e polenta",
+      "6": "buffet de saladas; placa SOBREMESAS e piso do espaço kids ao fundo",
+      "7": "linguiça e frango assados",
+      "8": "costela e carne no espeto (avental com marca de terceiros visível: recortar)",
+      "9": "prato montado com bife, salada, batata recheada, pão de alho",
+      "10": "pratos quentes do buffet: massas, molhos, peixe, enrolados",
+      "11": "saladas, sushi de salmão e frutas",
+      "12": "foto histórica do começo: fachada 'Churrascaria e Lanch. Querência' com criança em cavalinho de pedal (usar na seção Nossa História, sem legenda inventada; fornecida pelo cliente)"
+    },
+    "obs": "Resolução 1080x1350: serve para grade/painéis, não para tela cheia no desktop. Hero (picanha) continua dependendo de geração por IA."
+  },
+  "logos": {
+    "bege": "fonte/logo-original.png (1080x1920, fundo bege #F9DCC7 opaco)",
+    "branca": "fonte/logo-fundo-branco.png (1080x1920, fundo branco opaco)",
+    "dourada": "fonte/fotos-originais/3.png (monocromática dourada, fundo branco)"
+  },
+  "conceito": "",
+  "modelos": {
+    "video": "bytedance/seedance-2.0",
+    "imagem": "openai/gpt-image-2"
+  }
+}
