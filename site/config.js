@@ -16,6 +16,7 @@ window.SITE = {
 
   frames: {
     total: 110, // desktop (valor impresso pelo fatiar_frames.sh)
+    fps: 14, // velocidade do filme de abertura (quadros por segundo)
     totalMobile: 72, // celular usa menos quadros (menos dados)
     desktop: "assets/frames/desktop/f_{n}.webp",
     mobile: "assets/frames/mobile/f_{n}.webp",

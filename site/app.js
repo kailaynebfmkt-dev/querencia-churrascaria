@@ -32,14 +32,20 @@
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(medirTudo);
   if ("ResizeObserver" in window) new ResizeObserver(pedirMedida).observe(document.body);
 
-  /* ── Filmes que a rolagem toca (hero e cenas dos capítulos) ───────────── */
+  /* ── Filmes que tocam sozinhos pelo tempo (hero e cenas dos capítulos) ───
+     Nada aqui depende da rolagem: o hero começa quando a cortina sobe; cada cena começa
+     quando aparece na tela e toca até o fim, parando no último quadro. ─────────────── */
   const filmes = [];
-  function criarFilme({ secao, palco, canvas, total, src, momentos, barras, deslocar, imediato }) {
+  function criarFilme({ secao, palco, canvas, total, src, momentos, barras, deslocar, imediato, fps }) {
     const ctx = canvas.getContext("2d");
     const quadros = new Array(total);
-    const f = { top: 0, altura: 0, curso: 1, atual: 0, desenhado: -1, carga: false, liberado: !imediato, visivel: false, fixo: false, ativos: [], b: -1, w: 0, h: 0 };
+    const passo = lento ? 2 : 1;                       // conexão lenta: só quadros pares (o resto é mesclado)
+    const alvos = Math.ceil(total / passo);
+    const dur = (total - 1) / fps;
+    const f = { top: 0, altura: 0, t: 0, prog: 0, tocando: false, fim: false, carga: false, nCarga: 0, pronto: false, visivel: !!imediato, chave: "", ativos: [], b: -1, w: 0, h: 0 };
 
     const pronto = (i) => quadros[i] && quadros[i].complete && quadros[i].naturalWidth;
+    const disponivel = (i) => pronto(i) || (quadros[i] && quadros[i].falhou);
     const maisProximo = (i) => {
       for (let d = 0; d < total; d++) {
         if (pronto(i - d)) return i - d;
@@ -47,71 +53,89 @@
       }
       return -1;
     };
-    const desenhar = (i, forcar) => {
-      const j = maisProximo(i);
-      if (j < 0 || (j === f.desenhado && !forcar)) return;
-      const img = quadros[j], cw = canvas.width, ch = canvas.height;
+    const pintar = (img, alfa, k) => {
+      const cw = canvas.width, ch = canvas.height;
       // "cover". No desktop, no começo do hero a picanha é deslocada para a direita (leve zoom), liberando a esquerda para o texto.
-      const k = deslocar && cw > ch * 1.2 ? Math.max(0, 1 - f.atual / (total - 1) / 0.3) : 0;
       const s = Math.max(cw / img.naturalWidth, ch / img.naturalHeight) * (1 + 0.14 * k);
       const w = img.naturalWidth * s, h = img.naturalHeight * s;
       const x = k ? cw * (0.51 + 0.09 * k) - 0.51 * w : (cw - w) / 2;
+      ctx.globalAlpha = alfa;
       ctx.drawImage(img, Math.min(0, x), (ch - h) / 2, w, h);
-      f.desenhado = j;
+    };
+    // Desenha a posição (fracionária) do filme: mescla o quadro atual com o próximo, para o movimento ficar contínuo
+    const desenhar = (pos, forcar) => {
+      const i = Math.floor(pos), fr = Math.round((pos - i) * 40) / 40;
+      const chave = `${i}:${fr}:${canvas.width}`;
+      if (chave === f.chave && !forcar) return;
+      const j = maisProximo(i);
+      if (j < 0) return;
+      const k = deslocar && canvas.width > canvas.height * 1.2 ? Math.max(0, 1 - f.prog / 0.3) : 0;
+      pintar(quadros[j], 1, k);
+      if (fr > 0 && i + 1 < total && pronto(i + 1)) pintar(quadros[i + 1], fr, k);
+      ctx.globalAlpha = 1;
+      f.chave = chave;
     };
     const carregar = (i) => {
       if (quadros[i]) return;
       const img = new Image();
       img.decoding = "async";
+      const fim = () => {
+        f.nCarga++;
+        if (!f.pronto && f.nCarga >= Math.max(3, Math.ceil(alvos * 0.35))) {
+          f.pronto = true;
+          if (imediato) document.dispatchEvent(new Event("hero-pronto"));
+        }
+        if (i === 0 || !f.tocando) desenhar(f.t * fps, true);
+      };
+      img.onload = fim;
+      img.onerror = () => { img.falhou = true; fim(); };
       img.src = src(i);
-      img.onload = () => { if (Math.round(f.atual) === i || f.desenhado === -1) desenhar(Math.round(f.atual), true); };
       quadros[i] = img;
     };
-    // Baixa em passadas (1 a cada 8, depois 4, 2, 1) para cobrir o filme inteiro cedo
+    // Baixa em ordem (é a ordem em que o filme toca), em lotes pequenos para não travar a página
     const iniciarCarga = () => {
       if (f.carga) return;
       f.carga = true;
-      const fila = [];
-      for (const passo of (lento ? [8, 4] : [8, 4, 2, 1])) for (let i = 0; i < total; i += passo) if (!fila.includes(i)) fila.push(i);
       let k = 0;
-      const lote = () => { for (let n = 0; n < (celular ? 3 : 6) && k < fila.length; n++) carregar(fila[k++]); if (k < fila.length) setTimeout(lote, celular ? 60 : 40); };
+      const lote = () => { for (let n = 0; n < (celular ? 3 : 6) && k < total; n++, k += passo) carregar(k); if (k < total) setTimeout(lote, celular ? 60 : 30); };
       lote();
     };
-    if (imediato) {
-      carregar(0);
-      if (!reduzir) {
-        const depois = () => setTimeout(() => { f.liberado = true; iniciarCarga(); }, 300);   // só depois que a página carregou
-        if (document.readyState === "complete") depois(); else addEventListener("load", depois, { once: true });
-      }
-    }
+    if (imediato) { carregar(0); if (!reduzir) iniciarCarga(); }
+    else if ("IntersectionObserver" in window) {
+      new IntersectionObserver(([e]) => { if (e.isIntersecting) iniciarCarga(); }, { rootMargin: "150% 0px" }).observe(secao);
+    } else iniciarCarga();
 
+    // Visibilidade: o filme só é desenhado enquanto aparece; a cena só começa quando ~40% dela está na tela
+    let naTela = false;
+    new IntersectionObserver(([e]) => { f.visivel = e.isIntersecting; naTela = e.intersectionRatio >= 0.4; }, { threshold: [0, 0.4] }).observe(secao);
+
+    f.pode = () => f.pronto && (imediato ? !document.body.classList.contains("carregando") : naTela);
     f.medir = () => {
       f.top = topoDoc(secao);
       f.altura = secao.offsetHeight;
-      f.curso = Math.max(1, f.altura - (palco.offsetHeight || vh));
       const dpr = Math.min(devicePixelRatio || 1, 1.5);
       const w = Math.round(canvas.clientWidth * dpr), h = Math.round(canvas.clientHeight * dpr);
-      if (w !== f.w || h !== f.h) { f.w = canvas.width = w; f.h = canvas.height = h; f.desenhado = -1; desenhar(Math.round(f.atual), true); }
+      if (w !== f.w || h !== f.h) { f.w = canvas.width = w; f.h = canvas.height = h; f.chave = ""; desenhar(f.t * fps, true); }
     };
-    f.quadro = (sy) => {
-      if (f.liberado && !f.carga && sy > f.top - vh * 2.5 && sy < f.top + f.altura) iniciarCarga();
-      f.visivel = sy > f.top - vh && sy < f.top + f.altura;
-      f.fixo = sy >= f.top && sy <= f.top + f.curso;            // palco cobrindo a tela inteira
+    f.quadro = (dt) => {
+      if (!f.tocando) { if (f.pode()) f.tocando = true; else return; }
+      if (!f.fim) {
+        // Se o quadro da vez ainda não chegou pela rede, o relógio espera (nada de pular quadros)
+        const idx = Math.min(total - 1, Math.floor(f.t * fps));
+        if (disponivel(idx - (idx % passo)) || disponivel(idx)) f.t += dt;
+        if (f.t >= dur) { f.t = dur; f.fim = true; secao.classList.add("fim"); }
+        f.prog = f.t / dur;
+      }
       if (!f.visivel) return;
-      const alvo = clamp((sy - f.top) / f.curso, 0, 1) * (total - 1);
-      f.atual += (alvo - f.atual) * 0.2;                        // suaviza: sensação de filme, não de slide
-      if (Math.abs(alvo - f.atual) < 0.05) f.atual = alvo;
-      desenhar(Math.round(f.atual));
-      const prog = f.atual / (total - 1);
-      const andou = prog > 0.02;                                // some a dica "role" depois que a pessoa começa a rolar
-      if (andou !== f.andou) { f.andou = andou; secao.classList.toggle("andou", andou); }
+      desenhar(f.t * fps);
+      const prog = f.prog;
       for (let i = 0; i < momentos.length; i++) {
         const m = momentos[i];
         const on = prog >= m.de && (prog < m.ate || (m.ate >= 1 && prog >= 1));
         if (on !== f.ativos[i]) { f.ativos[i] = on; m.el.classList.toggle("ativo", on); }
       }
-      if (barras) {                                             // barras de cinema: entram nos 8% iniciais e saem nos 8% finais
-        const b = Math.round(clamp(Math.min(prog / 0.08, (1 - prog) / 0.08), 0, 1) * 100) / 100;
+      if (barras) {                                             // barras de cinema entram nos 8% iniciais e ficam
+        const b = Math.round(clamp(prog / 0.08, 0, 1) * 100) / 100;
         if (b !== f.b) { f.b = b; palco.style.setProperty("--b", b); }
       }
     };
@@ -130,11 +154,11 @@
     filmeHero = criarFilme({
       secao: cine, palco: um(".cine-palco", cine), canvas: cineCanvas, total: celular ? (S.frames.totalMobile || S.frames.total) : S.frames.total,
       src: (i) => padrao.replace("{n}", String(i + 1).padStart(4, "0")),
-      momentos: lerMomentos(cine), barras: false, deslocar: true, imediato: true,
+      momentos: lerMomentos(cine), barras: false, deslocar: true, imediato: true, fps: S.frames.fps || 14,
     });
     if (reduzir) cine.querySelector(".momento").classList.add("ativo");
   }
-  // Cenas dos capítulos (só baixam quando se aproximam)
+  // Cenas dos capítulos (só baixam quando se aproximam; tocam quando aparecem)
   if (!reduzir) {
     todos(".cena").forEach((cena) => {
       const canvas = um(".cena-canvas", cena), palco = um(".cena-palco", cena);
@@ -143,7 +167,7 @@
       criarFilme({
         secao: cena, palco, canvas, total,
         src: (i) => `${cena.dataset.pasta}/${celular ? "m" : "d"}/f_${String(i + 1).padStart(4, "0")}.webp`,
-        momentos: lerMomentos(cena), barras: true, deslocar: false, imediato: false,
+        momentos: lerMomentos(cena), barras: true, deslocar: false, imediato: false, fps: parseFloat(cena.dataset.fps || 12),
       });
     });
   }
@@ -325,7 +349,7 @@
   /* ══════════════════════════════════════════════════════════════════════════
      Efeitos de página inteira: cortina, títulos, cascatas, contadores, faixas, paralaxe, luz do cursor
      ══════════════════════════════════════════════════════════════════════════ */
-  let faixasTexto = [], pares = [], barraProgresso = null, luz = null;
+  let faixasTexto = [], pares = [], luz = null;
   const alvoMouse = { x: innerWidth / 2, y: innerHeight / 2, cx: innerWidth / 2, cy: innerHeight / 2 };
 
   if (!reduzir) {
@@ -344,9 +368,12 @@
           setTimeout(() => abertura.remove(), 1000);
         }, Math.max(0, 700 - (performance.now() - inicio)));
       };
-      if (document.readyState === "complete") encerrar();
+      // Sobe assim que o filme de abertura tem quadros suficientes para tocar sem engasgar
+      if (filmeHero) {
+        if (filmeHero.pronto) encerrar(); else document.addEventListener("hero-pronto", encerrar, { once: true });
+      } else if (document.readyState === "complete") encerrar();
       else addEventListener("load", encerrar, { once: true });
-      setTimeout(encerrar, 3000); // nunca prende o visitante
+      setTimeout(encerrar, 3500); // nunca prende o visitante
     }
 
     // 2) Títulos: cada palavra sobe de uma máscara
@@ -391,9 +418,9 @@
       return o;
     });
 
-    // 6) Paralaxe dentro das molduras das fotos
+    // 6) (sem paralaxe: nenhum efeito depende da rolagem)
     const velocidades = [1, 1.5, 0.8, 1.25];
-    pares = (celular ? [] : todos(".foto img, .galeria-item img")).map((img, i) => {
+    pares = [].map((img, i) => {
       const p = { img, caixa: img.parentElement, vel: img.closest(".galeria-item") ? velocidades[i % 4] : 1, top: 0, h: 0, vivo: false };
       medidores.push(() => { p.top = topoDoc(p.caixa); p.h = p.caixa.offsetHeight; });
       return p;
@@ -415,25 +442,24 @@
         b.addEventListener("pointerleave", () => { b.style.setProperty("--mx", "0px"); b.style.setProperty("--my", "0px"); });
       });
     }
-    barraProgresso = um(".progresso i");
+    const barra = um(".progresso"); if (barra) barra.remove();
   }
 
   /* ══════════════════════════════════════════════════════════════════════════
      LAÇO ÚNICO. Ordem: ler (scrollY) → calcular → escrever. Nunca mede layout aqui.
      ══════════════════════════════════════════════════════════════════════════ */
   medirTudo();
-  let tAnt = performance.now(), yAnt = scrollY, velocidade = 0, tempo = 0, ultimoProgresso = -1, nQuadro = 0;
+  let tAnt = performance.now(), yAnt = scrollY, tempo = 0, nQuadro = 0;
   const amostras = [];
   const laco = (agora) => {
     const dt = Math.min(0.05, (agora - tAnt) / 1000) || 0.016;
     tAnt = agora; tempo += dt; nQuadro++;
     const sy = scrollY, dy = sy - yAnt;
     yAnt = sy;
-    velocidade += (Math.abs(dy) / dt - velocidade) * 0.08;
 
-    // MODO LEVE automático: mede o tempo dos quadros enquanto a pessoa rola. Se a mediana passar de ~34 ms
+    // MODO LEVE automático: mede o tempo dos quadros depois da abertura. Se a mediana passar de ~34 ms
     // (menos de ~30 quadros/s), desliga os efeitos caros (brilho de calor, luz do cursor, paralaxe, metade das brasas).
-    if (!modoLeve && dy !== 0 && !document.hidden) {
+    if (!modoLeve && tempo > 3 && !document.hidden && !document.body.classList.contains("carregando")) {
       amostras.push(dt);
       if (amostras.length >= 60) {
         amostras.sort((a, b) => a - b);
@@ -454,34 +480,29 @@
 
     // filmes (hero e cenas)
     let cobreTela = false, heroVisivel = false;
-    for (const f of filmes) { f.quadro(sy); if (f.fixo) cobreTela = true; if (f === filmeHero) heroVisivel = f.visivel; }
+    for (const f of filmes) {
+      f.quadro(dt);
+      if (f.visivel && f.top <= sy + 2 && f.top + f.altura >= sy + vh - 2) cobreTela = true;   // filme ocupando a tela inteira
+      if (f === filmeHero) heroVisivel = f.visivel;
+    }
 
     // brasas: a camada de fundo para quando um filme cobre a tela; a do hero só roda com o hero à vista
     if (motoresBrasa.length) {
       const principal = motoresBrasa.find((m) => m.principal);
       if (principal && principal.w && !cobreTela) {
-        if (Math.abs(dy) > 28 && principal.ps.length < 120) {
-          const n = Math.min(3, Math.floor(Math.abs(dy) / 28));
-          for (let k = 0; k < n; k++) principal.ps.push(principal.faisca());
-        }
+        if (nQuadro % 90 === 0 && principal.ps.length < 120) principal.ps.push(principal.faisca());   // faíscas ocasionais, sozinhas
         const economia = modoLeve || celular;                           // celular e modo leve: brasas em metade dos quadros
-        if (!economia || (nQuadro & 1)) principal.passo(dt * (economia ? 2 : 1), dy, tempo, sy);
+        if (!economia || (nQuadro & 1)) principal.passo(dt * (economia ? 2 : 1), 0, tempo, sy);
       }
       const heroB = motoresBrasa.find((m) => !m.principal);
-      if (heroB && heroB.w && heroVisivel && (!(modoLeve || celular) || (nQuadro & 1))) heroB.passo(dt * ((modoLeve || celular) ? 2 : 1), dy, tempo, sy);
+      if (heroB && heroB.w && heroVisivel && (!(modoLeve || celular) || (nQuadro & 1))) heroB.passo(dt * ((modoLeve || celular) ? 2 : 1), 0, tempo, sy);
     }
 
     if (!reduzir) {
-      // barra de progresso (só quando muda)
-      if (barraProgresso) {
-        const max = docAltura - vh;
-        const p = max > 0 ? Math.round(clamp(sy / max, 0, 1) * 1000) / 1000 : 0;
-        if (p !== ultimoProgresso) { ultimoProgresso = p; barraProgresso.style.transform = `scaleX(${p})`; }
-      }
       // faixas de texto (aceleram com a rolagem)
       for (const f of faixasTexto) {
         if (!f.larg || f.top > sy + vh || f.top + f.h < sy) continue;
-        f.x += f.dir * (70 + Math.min(velocidade, 3000) * 0.28) * dt;
+        f.x += f.dir * 70 * dt;
         if (f.dir < 0 && f.x <= -f.larg) f.x += f.larg;
         if (f.dir > 0 && f.x >= 0) f.x -= f.larg;
         f.trilho.style.transform = `translate3d(${f.x.toFixed(1)}px,0,0)`;

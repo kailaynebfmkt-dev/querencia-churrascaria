@@ -789,3 +789,19 @@ body.menu-aberto { overflow: hidden; }
 }
 /* Celular: frase do hero mais acima */
 @media (max-width: 640px) { .cine .momento, .cine .momento--direita { bottom: 24vh; } .cine .momento--centro { bottom: 15vh; } }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   FILMES SEM ROLAGEM: hero e cenas ocupam uma tela e tocam sozinhos pelo tempo
+   (sobrescreve as regras antigas de "palco fixo" com altura de 300vh / 210vh)
+   ══════════════════════════════════════════════════════════════════════════ */
+.cine, .cena { height: 100vh; height: 100svh; min-height: 520px; }
+.cine-palco, .cena-palco { position: relative; }
+.progresso { display: none; }
+/* a dica "role" só aparece quando o filme de abertura termina */
+.cine-dica { opacity: 0; }
+.cine.fim .cine-dica { opacity: .7; }
+@media (max-width: 760px) { .cine-dica { display: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .cena { height: 80svh; min-height: 0; }
+  .cine-dica { display: none; }
+}
