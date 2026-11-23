@@ -36,13 +36,13 @@
      Nada aqui depende da rolagem: o hero começa quando a cortina sobe; cada cena começa
      quando aparece na tela e toca até o fim, parando no último quadro. ─────────────── */
   const filmes = [];
-  function criarFilme({ secao, palco, canvas, total, src, momentos, barras, deslocar, imediato, fps }) {
+  function criarFilme({ secao, palco, canvas, total, src, momentos, barras, deslocar, imediato, fps, loop }) {
     const ctx = canvas.getContext("2d");
     const quadros = new Array(total);
     const passo = lento ? 2 : 1;                       // conexão lenta: só quadros pares (o resto é mesclado)
     const alvos = Math.ceil(total / passo);
     const dur = (total - 1) / fps;
-    const f = { top: 0, altura: 0, t: 0, prog: 0, tocando: false, fim: false, carga: false, nCarga: 0, pronto: false, visivel: !!imediato, chave: "", ativos: [], b: -1, w: 0, h: 0 };
+    const f = { top: 0, altura: 0, t: 0, prog: 0, tocando: false, fim: false, carga: false, nCarga: 0, pronto: false, completo: false, aoCompletar: null, visivel: !!imediato, chave: "", ativos: [], b: -1, w: 0, h: 0 };
 
     const pronto = (i) => quadros[i] && quadros[i].complete && quadros[i].naturalWidth;
     const disponivel = (i) => pronto(i) || (quadros[i] && quadros[i].falhou);
@@ -72,6 +72,9 @@
       const k = deslocar && canvas.width > canvas.height * 1.2 ? Math.max(0, 1 - f.prog / 0.3) : 0;
       pintar(quadros[j], 1, k);
       if (fr > 0 && i + 1 < total && pronto(i + 1)) pintar(quadros[i + 1], fr, k);
+      // Filme em repetição: no fim, dissolve de volta para o primeiro quadro (a volta não dá "pulo")
+      const F = Math.ceil(fps * 0.8), ini = total - 1 - F;
+      if (loop && pos > ini && pronto(0)) { const x = clamp((pos - ini) / F, 0, 1); pintar(quadros[0], x * x * (3 - 2 * x), 0); }
       ctx.globalAlpha = 1;
       f.chave = chave;
     };
@@ -85,6 +88,7 @@
           f.pronto = true;
           if (imediato) document.dispatchEvent(new Event("hero-pronto"));
         }
+        if (!f.completo && f.nCarga >= alvos) { f.completo = true; if (f.aoCompletar) f.aoCompletar(); }
         if (i === 0 || !f.tocando) desenhar(f.t * fps, true);
       };
       img.onload = fim;
@@ -100,16 +104,14 @@
       const lote = () => { for (let n = 0; n < (celular ? 3 : 6) && k < total; n++, k += passo) carregar(k); if (k < total) setTimeout(lote, celular ? 60 : 30); };
       lote();
     };
+    f.iniciarCarga = iniciarCarga;
+    // O hero baixa logo ao abrir; cada cena começa a baixar quando o filme anterior termina de baixar (veja a "cadeia" abaixo)
     if (imediato) { carregar(0); if (!reduzir) iniciarCarga(); }
-    else if ("IntersectionObserver" in window) {
-      new IntersectionObserver(([e]) => { if (e.isIntersecting) iniciarCarga(); }, { rootMargin: "150% 0px" }).observe(secao);
-    } else iniciarCarga();
 
-    // Visibilidade: o filme só é desenhado enquanto aparece; a cena só começa quando ~40% dela está na tela
-    let naTela = false;
-    new IntersectionObserver(([e]) => { f.visivel = e.isIntersecting; naTela = e.intersectionRatio >= 0.4; }, { threshold: [0, 0.4] }).observe(secao);
+    // Visibilidade: o filme só é desenhado enquanto aparece na tela (o relógio anda de qualquer jeito)
+    new IntersectionObserver(([e]) => { f.visivel = e.isIntersecting; if (e.isIntersecting && !reduzir) iniciarCarga(); }).observe(secao);   // chegou antes da vez na cadeia: baixa já
 
-    f.pode = () => f.pronto && (imediato ? !document.body.classList.contains("carregando") : naTela);
+    f.pode = () => f.pronto && !document.body.classList.contains("carregando");   // toca assim que a cortina sobe
     f.medir = () => {
       f.top = topoDoc(secao);
       f.altura = secao.offsetHeight;
@@ -123,7 +125,7 @@
         // Se o quadro da vez ainda não chegou pela rede, o relógio espera (nada de pular quadros)
         const idx = Math.min(total - 1, Math.floor(f.t * fps));
         if (disponivel(idx - (idx % passo)) || disponivel(idx)) f.t += dt;
-        if (f.t >= dur) { f.t = dur; f.fim = true; secao.classList.add("fim"); }
+        if (f.t >= dur) { if (loop) f.t -= dur; else { f.t = dur; f.fim = true; secao.classList.add("fim"); } }
         f.prog = f.t / dur;
       }
       if (!f.visivel) return;
@@ -167,9 +169,14 @@
       criarFilme({
         secao: cena, palco, canvas, total,
         src: (i) => `${cena.dataset.pasta}/${celular ? "m" : "d"}/f_${String(i + 1).padStart(4, "0")}.webp`,
-        momentos: lerMomentos(cena), barras: true, deslocar: false, imediato: false, fps: parseFloat(cena.dataset.fps || 12),
+        momentos: lerMomentos(cena), barras: true, deslocar: false, imediato: false, fps: parseFloat(cena.dataset.fps || 12), loop: true,
       });
     });
+  }
+  // Cadeia de carga: hero → fogo → mesa → pedido (um por vez, sem brigar por banda). Tudo toca sozinho, sem precisar rolar.
+  if (!reduzir) {
+    filmes.forEach((f, i) => { if (filmes[i + 1]) f.aoCompletar = filmes[i + 1].iniciarCarga; });
+    if (filmes[0] && !filmes[0].carga) filmes[0].iniciarCarga();
   }
 
   /* ── Cabeçalho, WhatsApp, revelar e ano ───────────────────────────────── */
@@ -179,10 +186,6 @@
   let formNaTela = false, topoRolou = false, whatsVisivel = false;
   if (formEl) new IntersectionObserver(([e]) => { formNaTela = e.isIntersecting; }).observe(formEl);
 
-  const io = new IntersectionObserver((es) => es.forEach((e) => {
-    if (e.isIntersecting) { e.target.classList.add("visto"); io.unobserve(e.target); }
-  }), { threshold: 0.12 });
-  todos(".revelar").forEach((el) => io.observe(el));
   todos("[data-ano]").forEach((el) => (el.textContent = new Date().getFullYear()));
 
   /* ── Menu de celular (hambúrguer) ─────────────────────────────────────── */
@@ -263,6 +266,8 @@
       if (!janela) avisar("Seu navegador bloqueou a nova aba. Use o botão verde de WhatsApp.", "falha");
     });
   }
+
+  if (reduzir) todos(".revelar").forEach((el) => el.classList.add("visto"));
 
   /* ══════════════════════════════════════════════════════════════════════════
      Brasas e faíscas (canvas). Duas camadas: atrás das seções e sobre o hero.
@@ -365,6 +370,7 @@
         setTimeout(() => {
           abertura.classList.add("some");
           document.body.classList.remove("carregando");
+          document.dispatchEvent(new Event("abertura-fim"));
           setTimeout(() => abertura.remove(), 1000);
         }, Math.max(0, 700 - (performance.now() - inicio)));
       };
@@ -394,10 +400,10 @@
     const formatar = (v, dec) => v.toFixed(dec).replace(".", ",");
     const contadores = todos("[data-contar]");
     contadores.forEach((el) => { el.textContent = formatar(parseFloat(el.dataset.de || 0), parseInt(el.dataset.dec || 0, 10)); });
-    const ioContar = new IntersectionObserver((es) => es.forEach((e) => {
-      if (!e.isIntersecting) return;
-      ioContar.unobserve(e.target);
-      const el = e.target, alvo = parseFloat(el.dataset.contar), de = parseFloat(el.dataset.de || 0), dec = parseInt(el.dataset.dec || 0, 10);
+    const contar = (el) => {
+      if (el.dataset.contou) return;
+      el.dataset.contou = "1";
+      const alvo = parseFloat(el.dataset.contar), de = parseFloat(el.dataset.de || 0), dec = parseInt(el.dataset.dec || 0, 10);
       const t0 = performance.now(), dur = 1500;
       const passo = (n) => {
         const k = clamp((n - t0) / dur, 0, 1);
@@ -405,8 +411,20 @@
         if (k < 1) requestAnimationFrame(passo);
       };
       requestAnimationFrame(passo);
-    }), { threshold: 0.6 });
-    contadores.forEach((el) => ioContar.observe(el));
+    };
+
+    // 4b) Revelação em sequência, por TEMPO (não por rolagem): quando a cortina sobe, os blocos da página
+    //     entram um atrás do outro, de cima para baixo, mesmo fora da tela. Quem rolar depois já encontra tudo pronto.
+    const revelaveis = todos(".revelar");
+    const comecarRevelar = () => {
+      revelaveis.forEach((el, i) => setTimeout(() => {
+        el.classList.add("visto");
+        todos("[data-contar]", el).forEach(contar);
+      }, 250 + i * 160));
+      setTimeout(() => contadores.forEach(contar), 250 + revelaveis.length * 160);   // contadores soltos (fora de blocos)
+    };
+    if (document.body.classList.contains("carregando")) document.addEventListener("abertura-fim", comecarRevelar, { once: true });
+    else comecarRevelar();
 
     // 5) Faixas de texto: montadas por JS a partir de data-itens
     faixasTexto = todos(".faixa-texto").map((el, i) => {
@@ -475,7 +493,7 @@
     // cabeçalho escuro depois de rolar e botão de WhatsApp (só troca classe quando muda)
     const rolou = sy > 40;
     if (rolou !== topoRolou) { topoRolou = rolou; topo && topo.classList.toggle("rolou", rolou); }
-    const quer = sy > vh * 0.6 && !formNaTela;
+    const quer = !document.body.classList.contains("carregando") && !formNaTela;
     if (quer !== whatsVisivel) { whatsVisivel = quer; whats && whats.classList.toggle("visivel", quer); }
 
     // filmes (hero e cenas)
